@@ -1,0 +1,48 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String?
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+
+  cities City[]
+  alerts Alert[]
+}
+
+model City {
+  id        String   @id @default(cuid())
+  name      String
+  country   String?
+  lat       Float
+  lon       Float
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  alerts Alert[]
+
+  @@unique([userId, lat, lon])
+}
+
+model Alert {
+  id        String   @id @default(cuid())
+  type      String // TEMP_ABOVE | TEMP_BELOW | RAIN | WIND_ABOVE
+  threshold Float?
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  cityId String
+  city   City   @relation(fields: [cityId], references: [id], onDelete: Cascade)
+}
